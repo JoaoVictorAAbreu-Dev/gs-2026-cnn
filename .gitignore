@@ -1,0 +1,11 @@
+.venv/
+data/
+outputs/*
+!outputs/results.json
+!outputs/split.json
+!outputs/*_curvas.png
+!outputs/matriz_teste.png
+__pycache__/
+.ipynb_checkpoints/
+.presentation-build/
+.chart-data-*/
