@@ -12,4 +12,4 @@ Fonte: GS2026-2_CNN2(5).pdf, seções 4–9. Equipes de até três; IA generativ
 | Decisões e uso de IA | 1,0 | README e análise do grupo | Revisão humana pendente |
 | Clareza e materiais | 1,0 | notebook executável e slides de até 10 páginas | Notebook executado; apresentação com 10 slides pronta para revisão da dupla |
 
-Resultados, análise de erros, diferença entre treino e validação e evidência de uma chamada local do app estão em RESULTADOS.md. A divisão aleatória pode misturar localidades próximas. Antes da entrega, a dupla precisa incluir a identificação dos integrantes, revisar as contribuições e confirmar as orientações do portal.
+Resultados, análise de erros, diferença entre treino e validação e evidência de uma chamada local do app estão em RESULTADOS.md. A divisão aleatória pode misturar localidades próximas. A identificação da dupla consta na apresentação. Antes da entrega, a dupla precisa revisar as contribuições e confirmar as orientações do portal.
