@@ -14,6 +14,6 @@ No teste, foram corretamente classificados 37/40 Forest, 32/40 Industrial, 29/40
 
 A aplicação Gradio foi iniciada localmente e uma imagem real de Forest foi enviada à rota de classificação pelo cliente Gradio: retornou as quatro probabilidades, com Forest como classe mais provável. Isso comprova uma chamada local, não o desempenho em novas regiões. A divisão aleatória pode colocar imagens espacialmente próximas em conjuntos diferentes; validar por região e por sensor, além de calibrar probabilidades, são trabalhos futuros. A classificação visual River não estima escassez de água.
 
-Uso de IA generativa: assistente de programação ajudou a escrever e executar código e documentos; a dupla deve revisar, compreender e declarar o uso real no material. A identificação dos alunos e RMs consta nos slides. Nenhuma submissão foi feita.
+Uso de IA generativa: João e Rodrigo afirmam ter conhecimento para realizar grande parte do projeto de forma independente. Nesta execução, um assistente ajudou a organizar experimentos, escrever e executar código e elaborar documentos. A dupla deve revisar os resultados e compreender as decisões antes da entrega. A identificação dos alunos e RMs consta nos slides. Nenhuma submissão foi feita.
 
 Validação de reprodutibilidade: notebook executado integralmente em diretório separado, com mesma arquitetura selecionada, acurácias de validação e matriz de teste. As saídas do treino e gráficos foram preservados no notebook; a célula do app precisa ser executada novamente para abrir o servidor.

@@ -77,6 +77,6 @@ O repositório versiona métricas, divisão e gráficos em `outputs/`. O dataset
 
 ## Entrega acadêmica
 
-A rubrica e as evidências de cada critério estão em [REQUISITOS.md](docs/REQUISITOS.md). Ferramentas de IA generativa auxiliaram na organização do experimento, na elaboração de código e na documentação; a equipe deve revisar o trabalho, entender as decisões e declarar suas contribuições reais.
+A rubrica e as evidências de cada critério estão em [REQUISITOS.md](docs/REQUISITOS.md). João e Rodrigo afirmam ter conhecimento para desenvolver grande parte da solução de forma independente. Neste projeto, utilizaram apoio de IA generativa na organização dos experimentos, na elaboração e execução de código e na documentação. A dupla deve revisar os resultados, compreender as decisões e responder pelo trabalho entregue.
 
 Antes de submeter, a dupla precisa revisar notebook, app e slides, e confirmar prazo e formato no Portal do Aluno. A entrega ainda não foi submetida.
