@@ -1,0 +1,29 @@
+name: Treino da CNN e teste do app
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Treinar as 3 CNNs (baixa o EuroSAT do Zenodo)
+        run: python src/train.py
+      - name: Resumo dos resultados
+        run: |
+          python -c "import json;r=json.load(open('outputs/results.json'));print('Selecionada:',r['best']);[print(e['config']['name'],round(e['val_accuracy'],4)) for e in r['experiments']];print('Acurácia teste:',r['test_report']['accuracy'])"
+      - name: Teste de fumaça do app Gradio
+        run: python tests/smoke_app.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: modelo-e-metricas
+          path: |
+            outputs/best.keras
+            outputs/results.json
+            outputs/*.png

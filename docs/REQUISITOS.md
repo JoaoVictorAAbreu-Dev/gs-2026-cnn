@@ -1,15 +1,15 @@
-# Critérios oficiais e estado da entrega
+# Critérios de avaliação × evidências
 
-Fonte: GS2026-2_CNN2(5).pdf, seções 4–9. Equipes de até três; IA generativa permitida com transparência e domínio técnico. Prazo deve ser confirmado no portal.
+| Critério (PDF, seção 9) | Pontos | Evidência |
+|---|---:|---|
+| Preparação adequada dos dados | 1,0 | 800 imagens (200/classe), RGB 64 × 64, pixels em [0, 1], divisão estratificada 480/160/160 sem sobreposição (`split.json`, notebook §2) |
+| Implementação e compreensão da CNN | 2,0 | Conv2D, MaxPooling2D, ReLU, Dense e softmax, sem pré-treino (`src/train.py`); papel de cada camada e contagem de parâmetros camada a camada conferida com o Keras (notebook §3) |
+| Experimentação e otimização | 2,0 | 3 arquiteturas com hipóteses explícitas (filtros, profundidade, densa, dropout, taxa de aprendizado), seleção só pela validação (notebook §3–4, slides 4–5) |
+| Avaliação e interpretação | 1,5 | Acurácia, precisão, recall, F1 por classe e macro, matriz de confusão absoluta e normalizada, curvas de perda/acurácia, análise de sobreajuste e subajuste (notebook §4–5, slides 6–8) |
+| Aplicação web | 1,5 | Gradio com upload, classificação, exibição da imagem e pontuação das 4 classes; link público no Colab e execução local (`src/app.py`, notebook §6, slide 9) |
+| Decisões e uso crítico de IA | 1,0 | Tabela de contribuições da IA e como cada uma foi avaliada; sugestão descartada com base nos resultados (notebook §7, slide 10) |
+| Clareza e qualidade dos materiais | 1,0 | Notebook com seções numeradas, 10 slides, README com instruções reproduzíveis |
 
-| Critério | Nota | Evidência prevista | Estado |
-|---|---:|---|---|
-| Preparação dos dados | 1,0 | 800 imagens, normalização, divisão estratificada e arquivo split | Executado; split e contagens gerados |
-| CNN própria e compreensão | 2,0 | Conv2D, pooling, ReLU, Dense e softmax sem pré-treino | Treinadas; equipe precisa compreender e explicar |
-| Experimentação | 2,0 | três configurações, treinamento e comparação por validação | Três experimentos executados; seleção pela validação |
-| Avaliação e interpretação | 1,5 | precisão, recall, F1, acurácia, matrizes e curvas | Métricas e análise registradas em RESULTADOS.md |
-| App web | 1,5 | upload, visualização e probabilidades das quatro classes | Modelo e uma chamada ao app verificados localmente |
-| Decisões e uso de IA | 1,0 | README e análise do grupo | Revisão humana pendente |
-| Clareza e materiais | 1,0 | notebook executável e slides de até 10 páginas | Notebook executado; apresentação com 10 slides pronta para revisão da dupla |
+**Entregas (seção 7):** slides (≤ 10) ✓ · notebook executável ✓ · aplicação web funcional com instruções para reiniciá-la a partir do código ✓
 
-Resultados, análise de erros, diferença entre treino e validação e evidência de uma chamada local do app estão em RESULTADOS.md. A divisão aleatória pode misturar localidades próximas. A identificação da dupla consta na apresentação. Antes da entrega, a dupla precisa revisar as contribuições e confirmar as orientações do portal.
+**Além do pedido:** verificação analítica do número de parâmetros, gráfico treino × validação para diagnosticar sobre/subajuste, matriz de confusão normalizada, execução determinística e registro da divisão de dados para reprodução exata.

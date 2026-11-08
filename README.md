@@ -1,82 +1,90 @@
-# Territory Vision
+Integrantes: João Victor Alves de Abreu (RM 564946) e Rodrigo Kenshin Viana Matayoshi (RM 564026).
 
-Classificador experimental de imagens de satélite para a Global Solution FIAP 2026.2 de Aprendizado Profundo com CNN. O projeto compara três redes convolucionais treinadas do zero e apresenta a classificação em uma aplicação web local.
+# Territory Vision — Classificação de Imagens de Satélite com CNN
 
-**Integrantes:** João Victor Alves de Abreu (RM 564946) e Rodrigo Kenshin Viana Matayoshi (RM 564026).
+> Global Solution 2026.2 · FIAP · Aprendizado Profundo com Redes Neurais Convolucionais
 
-As quatro classes são **Forest** (floresta), **Industrial** (área industrial), **Residential** (área residencial) e **River** (rio). O modelo identifica padrões visuais em imagens semelhantes às do EuroSAT; não mede volume ou qualidade da água e não prevê escassez hídrica.
+Rede neural convolucional **treinada do zero** para classificar imagens de satélite do EuroSAT em quatro tipos de uso e cobertura do solo — **Forest**, **Industrial**, **Residential** e **River** —, com três arquiteturas comparadas pela validação e o melhor modelo publicado em uma **aplicação web Gradio**.
 
-## Resultados observados
+| Entregável | Arquivo |
+|---|---|
+| Notebook executável (dados, arquiteturas, treino, comparação, avaliação e app) | [`notebooks/Territory_Vision.ipynb`](notebooks/Territory_Vision.ipynb) |
+| Apresentação (10 slides) | [`docs/Territory_Vision_Apresentacao_Final.pptx`](docs/Territory_Vision_Apresentacao_Final.pptx) |
+| Aplicação web | [`src/app.py`](src/app.py) e última célula do notebook |
+| Rubrica × evidências | [`docs/REQUISITOS.md`](docs/REQUISITOS.md) · resultados detalhados em [`docs/RESULTADOS.md`](docs/RESULTADOS.md) |
 
-O experimento local usou 800 imagens RGB de 64 × 64 pixels, distribuídas igualmente entre as quatro classes. A amostra foi dividida de forma estratificada em 480 imagens de treino, 160 de validação e 160 de teste, com semente 42.
+## Resultados
 
-| Experimento | Acurácia na validação | Parâmetros |
-| --- | ---: | ---: |
-| CNN 1 | 85,00% | 529.700 |
-| **CNN 2** | **86,88%** | **2.117.188** |
-| CNN 3 | 83,13% | 1.142.468 |
+| Experimento | Arquitetura | Validação | Menor perda (val.) | Parâmetros |
+|---|---|---:|---:|---:|
+| CNN 1 (base) | Conv 16 → 32 · Dense 64 · sem dropout · LR 0,001 | 85,00 % | 0,437 | 529.700 |
+| **CNN 2 (selecionada)** | **Conv 32 → 64 · Dense 128 · Dropout 0,25 · LR 0,001** | **86,88 %** | **0,331** | **2.117.188** |
+| CNN 3 | Conv 32 → 64 → 128 · Dense 128 · Dropout 0,35 · LR 0,0005 | 83,13 % | 0,451 | 1.142.468 |
 
-A CNN 2 foi escolhida pela maior acurácia de validação; em caso de empate, o código usa a menor perda de validação. No conjunto de teste reservado, ela obteve **85,00% de acurácia**, precisão macro de **0,8502**, recall macro de **0,8500** e F1 macro de **0,8485**. A acurácia mede a proporção total de acertos; as médias macro dão o mesmo peso a cada classe.
+**Teste (160 imagens, avaliado uma única vez com a CNN 2):** acurácia **85,0 %** · precisão macro 0,850 · recall macro 0,850 · F1 macro 0,849.
 
-No teste, as confusões mais frequentes envolveram as classes industrial e residencial. A análise por classe, a matriz de confusão e as curvas estão em [Resultados](docs/RESULTADOS.md) e nos arquivos gerados em `outputs/`. As três configurações modificam mais de uma escolha por vez; a comparação não isola a causa de uma diferença de desempenho.
+| Classe | Precisão | Recall | F1 |
+|---|---:|---:|---:|
+| Forest | 0,949 | 0,925 | 0,937 |
+| Industrial | 0,842 | 0,800 | 0,821 |
+| Residential | 0,784 | 0,725 | 0,753 |
+| River | 0,826 | 0,950 | 0,884 |
+
+**Leitura dos experimentos**
+- Mais filtros e dropout (CNN 1 → CNN 2) trouxeram o maior ganho: +1,9 p.p. de acurácia e −24 % na perda de validação.
+- Mais profundidade com regularização forte e passo menor (CNN 3) causou **subajuste** em 12 épocas: na melhor época, a acurácia de treino (76,7 %) ficou abaixo da de validação (83,1 %).
+- A maior confusão é **Industrial × Residential** (14 dos 24 erros de teste), classes com telhados e malha viária parecidos em 64 × 64 pixels.
+- A perda de validação da CNN 2 ainda caía na última época — treinar por mais épocas é o próximo passo mais promissor.
 
 ## Dados e método
 
-O treinamento baixa a versão RGB do [EuroSAT no Zenodo](https://zenodo.org/records/7711810), seleciona 200 imagens por classe com semente fixa, redimensiona as imagens para 64 × 64 e normaliza os pixels para o intervalo de 0 a 1. O arquivo baixado na execução registrada teve SHA-256 `b4f5b234ecb7d7ff9c6cddb046543b4717c53fd6e9815be6c0e80cc614f51b90`.
+- **Base:** [EuroSAT RGB](https://github.com/phelber/EuroSAT) (versão oficial no [Zenodo 7711810](https://zenodo.org/records/7711810)), 200 imagens por classe sorteadas com semente 42.
+- **Preparação:** RGB, 64 × 64, pixels normalizados para [0, 1]; divisão estratificada 60/20/20 (480/160/160), registrada em `outputs/split.json`.
+- **Modelos:** Conv2D (3 × 3, ReLU) + MaxPooling2D, Flatten, Dense (ReLU), Dropout opcional e saída softmax de 4 classes; **sem modelos pré-treinados**.
+- **Treino:** Adam, *sparse categorical cross-entropy*, lote 32, até 12 épocas, EarlyStopping (paciência 3, melhores pesos pela perda de validação), execução determinística.
+- **Seleção:** maior acurácia de validação (desempate pela menor perda). O teste fica reservado para a avaliação final.
 
-Cada modelo combina camadas `Conv2D`, ReLU, pooling e camadas densas, com saída softmax de quatro classes. As configurações variam quantidade de filtros e camadas, tamanho da camada densa, dropout e taxa de aprendizado. O treino usa Adam, entropia cruzada esparsa e parada antecipada. A avaliação final usa o conjunto de teste somente após a seleção pela validação.
+## Como executar
 
-O arquivo `outputs/split.json` registra os caminhos das imagens usados em cada conjunto. A mesma semente e a execução repetida localmente reproduziram a matriz de teste documentada; versões de biblioteca e ambiente podem afetar a reprodução numérica. Confira os termos da fonte antes de redistribuir o dataset.
+### Google Colab (recomendado)
 
-## Executar localmente
+1. Abra `notebooks/Territory_Vision.ipynb` no Colab.
+2. Execute as células em ordem (*Ambiente de execução → Executar tudo*). A primeira instala as dependências; o treino baixa o EuroSAT (~91 MB) e leva alguns minutos em CPU.
+3. A última célula inicia o Gradio e mostra um **link público temporário** (`*.gradio.live`). Abra o link, envie uma imagem e clique em **Classificar**.
 
-**Pré-requisitos:** Python 3.12, [uv](https://docs.astral.sh/uv/), conexão para baixar o dataset e instalar dependências, e espaço para o arquivo RGB (aproximadamente 91 MiB), imagens extraídas, bibliotecas e modelos. Os comandos devem ser executados na raiz do projeto:
+### Localmente
 
-```bash
-uv venv --python 3.12 .venv
-uv pip install --python .venv/bin/python -r requirements.txt
-.venv/bin/python src/train.py
-.venv/bin/python src/app.py
-```
-
-O primeiro treino baixa e extrai o EuroSAT quando necessário e gera os modelos, gráficos e métricas. Ele pode levar alguns minutos em CPU. Depois, abra no navegador o endereço local mostrado pelo Gradio, normalmente `http://127.0.0.1:7860`, envie uma imagem e clique em **Classificar**. O aplicativo mostra a imagem e a pontuação das quatro classes. O app precisa de `outputs/best.keras`; se o arquivo não existir, execute o treinamento primeiro.
-
-Se o Python 3.12 estiver instalado no PATH e você preferir `venv` e `pip`:
+Requisitos: Python 3.10–3.12.
 
 ```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python src/train.py
-.venv/bin/python src/app.py
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+python src/train.py                  # baixa o EuroSAT, treina as 3 CNNs e gera outputs/
+python src/app.py                    # abre em http://127.0.0.1:7860
 ```
 
-O notebook [Territory Vision](notebooks/Territory_Vision.ipynb) reúne preparação, treino, comparação, avaliação e aplicação. Execute as células em ordem a partir de um ambiente Python compatível, como o Google Colab. A célula da aplicação deve ser executada novamente para iniciar seu servidor. O notebook foi executado integralmente em uma cópia isolada e reproduziu a seleção e a matriz de teste registradas.
+O aplicativo exibe a imagem enviada, a classe prevista e a pontuação de cada uma das quatro classes. Ele precisa de `outputs/best.keras`, gerado pelo treino (os pesos não são versionados por tamanho).
 
 ## Estrutura
 
 ```text
-src/train.py                    Preparação, treino, seleção e avaliação
-src/app.py                      Aplicação Gradio
-notebooks/Territory_Vision.ipynb Notebook com código, análise e gráficos
-docs/REQUISITOS.md              Rubrica e situação dos itens da prova
-docs/RESULTADOS.md              Métricas, análise e evidências locais
-docs/                            Apresentação da equipe
-requirements.txt                Dependências Python
-data/                            Dataset baixado e extraído, gerado localmente
-outputs/                         Divisão, métricas, gráficos e modelos locais
+notebooks/Territory_Vision.ipynb   notebook completo, executado
+src/train.py                       preparação, treino dos 3 experimentos, seleção e avaliação
+src/app.py                         aplicação Gradio
+outputs/                           métricas (results.json), divisão (split.json), curvas e matriz de confusão
+docs/                              apresentação, rubrica e resultados detalhados
+requirements.txt                   dependências
 ```
 
-O repositório versiona métricas, divisão e gráficos em `outputs/`. O dataset, os pesos `.keras` e `.venv/` ficam fora do Git: em um clone limpo, instale as dependências e execute o treino para obter o modelo necessário ao aplicativo. O teste do aplicativo realizado neste ambiente enviou uma imagem real e recebeu as quatro probabilidades pela interface Gradio.
+## Limitações
 
-## Limitações e uso responsável
+- Amostra de 800 imagens e uma única semente; outras divisões podem mudar os números.
+- A divisão aleatória pode colocar imagens de áreas vizinhas em conjuntos diferentes; os resultados não garantem desempenho em outras regiões ou sensores.
+- As pontuações softmax não são probabilidades calibradas.
+- A classe River indica a presença visual de um rio — não mede volume nem disponibilidade de água.
 
-- A divisão é aleatória e pode colocar imagens espacialmente próximas em conjuntos distintos. Os números não demonstram generalização para novas regiões ou sensores.
-- O estudo usa uma amostra de 800 imagens e uma única semente. Outras amostras e divisões podem produzir resultados diferentes.
-- As saídas softmax são pontuações do modelo e não foram calibradas como probabilidades confiáveis. A aplicação não substitui avaliação especializada.
-- Imagens de fora do EuroSAT, com outra resolução, estação ou sensor, podem receber classificações incorretas. A presença visual da classe River não informa disponibilidade hídrica.
+## Uso de IA generativa
 
-## Entrega acadêmica
-
-A rubrica e as evidências de cada critério estão em [REQUISITOS.md](docs/REQUISITOS.md). João e Rodrigo afirmam ter conhecimento para desenvolver grande parte da solução de forma independente. Neste projeto, utilizaram apoio de IA generativa na organização dos experimentos, na elaboração e execução de código e na documentação. A dupla deve revisar os resultados, compreender as decisões e responder pelo trabalho entregue.
-
-Antes de submeter, a dupla precisa revisar notebook, app e slides, e confirmar prazo e formato no Portal do Aluno. A entrega ainda não foi submetida.
+Usamos IA generativa como ferramenta de apoio (dúvidas, sugestões de código, depuração e revisão de textos). As sugestões foram avaliadas pelos resultados executados, e todos os números deste README foram conferidos em `outputs/results.json`. Detalhes na seção 7 do notebook.
