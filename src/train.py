@@ -45,15 +45,24 @@ def load(ids):
     return np.asarray(imgs,dtype='float32'),labels[ids]
 xtr,ytr=load(train); xv,yv=load(val); xt,yt=load(test)
 (OUT/'split.json').write_text(json.dumps({k:[str(Path(paths[i]).relative_to(DATA)) for i in ids] for k,ids in [('train',train),('val',val),('test',test)]},indent=2))
+# Experimentos 1–3: primeira rodada. Experimentos 4–6 mudam UMA coisa por vez em relação à CNN 2.
 configs=[
-    {'name':'cnn_1','filters':[16,32],'dense':64,'dropout':0.0,'lr':0.001},
-    {'name':'cnn_2','filters':[32,64],'dense':128,'dropout':0.25,'lr':0.001},
-    {'name':'cnn_3','filters':[32,64,128],'dense':128,'dropout':0.35,'lr':0.0005},
+    {'name':'cnn_1','filters':[16,32],'dense':64,'dropout':0.0,'lr':0.001,'batchnorm':False,'augment':False,'epochs':12},
+    {'name':'cnn_2','filters':[32,64],'dense':128,'dropout':0.25,'lr':0.001,'batchnorm':False,'augment':False,'epochs':12},
+    {'name':'cnn_3','filters':[32,64,128],'dense':128,'dropout':0.35,'lr':0.0005,'batchnorm':False,'augment':False,'epochs':12},
+    {'name':'cnn_4','filters':[32,64],'dense':128,'dropout':0.25,'lr':0.001,'batchnorm':True,'augment':False,'epochs':12},
+    {'name':'cnn_5','filters':[32,64],'dense':128,'dropout':0.25,'lr':0.001,'batchnorm':False,'augment':True,'epochs':12},
+    {'name':'cnn_6','filters':[32,64],'dense':128,'dropout':0.25,'lr':0.001,'batchnorm':False,'augment':False,'epochs':30},
 ]
 def make_model(c):
     layers=[tf.keras.layers.Input((64,64,3))]
+    if c['augment']:
+        # Imagens de satélite não têm "lado de cima": espelhar e girar gera exemplos válidos (só no treino).
+        layers += [tf.keras.layers.RandomFlip('horizontal_and_vertical'),tf.keras.layers.RandomRotation(0.25)]
     for filters in c['filters']:
-        layers.extend([tf.keras.layers.Conv2D(filters,3,padding='same',activation='relu'),tf.keras.layers.MaxPooling2D(2)])
+        layers.append(tf.keras.layers.Conv2D(filters,3,padding='same',use_bias=not c['batchnorm']))
+        if c['batchnorm']: layers.append(tf.keras.layers.BatchNormalization())
+        layers += [tf.keras.layers.Activation('relu'),tf.keras.layers.MaxPooling2D(2)]
     layers += [tf.keras.layers.Flatten(),tf.keras.layers.Dense(c['dense'],activation='relu')]
     if c['dropout']: layers.append(tf.keras.layers.Dropout(c['dropout']))
     layers.append(tf.keras.layers.Dense(4,activation='softmax'))
@@ -64,8 +73,8 @@ results=[]
 for c in configs:
     tf.keras.backend.clear_session(); tf.keras.utils.set_random_seed(SEED)
     model=make_model(c)
-    callback=tf.keras.callbacks.EarlyStopping(monitor='val_loss',patience=3,restore_best_weights=True)
-    history=model.fit(xtr,ytr,validation_data=(xv,yv),epochs=12,batch_size=32,callbacks=[callback],verbose=2)
+    callback=tf.keras.callbacks.EarlyStopping(monitor='val_loss',patience=3 if c['epochs']<=12 else 5,restore_best_weights=True)
+    history=model.fit(xtr,ytr,validation_data=(xv,yv),epochs=c['epochs'],batch_size=32,callbacks=[callback],verbose=2)
     val_prob=model.predict(xv,verbose=0); val_pred=val_prob.argmax(axis=1)
     model.save(OUT/(c['name']+'.keras'))
     item={'config':c,'epochs_run':len(history.history['loss']),'val_accuracy':float(accuracy_score(yv,val_pred)),
