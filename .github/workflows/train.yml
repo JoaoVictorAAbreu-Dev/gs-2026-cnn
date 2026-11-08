@@ -22,6 +22,11 @@ jobs:
           python -c "import json;r=json.load(open('outputs/results.json'));print('Selecionada:',r['best']);[print(e['config']['name'],round(e['val_accuracy'],4),e['epochs_run']) for e in r['experiments']];print('Acurácia teste:',r['test_report']['accuracy'])"
       - name: Teste de fumaça do app Gradio
         run: python tests/smoke_app.py
+      - name: Exportar notebook executado e resultados (base64 no log)
+        if: always()
+        run: |
+          tar czf /tmp/resultado.tgz executado outputs/results.json outputs/split.json outputs/*.png
+          echo "=====INICIO-RESULTADO====="; base64 -w 0 /tmp/resultado.tgz; echo; echo "=====FIM-RESULTADO====="
       - uses: actions/upload-artifact@v4
         if: always()
         with:

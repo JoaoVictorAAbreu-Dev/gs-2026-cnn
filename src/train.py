@@ -61,7 +61,8 @@ def make_model(c):
         layers += [tf.keras.layers.RandomFlip('horizontal_and_vertical'),tf.keras.layers.RandomRotation(0.25)]
     for filters in c['filters']:
         layers.append(tf.keras.layers.Conv2D(filters,3,padding='same',use_bias=not c['batchnorm']))
-        if c['batchnorm']: layers.append(tf.keras.layers.BatchNormalization())
+        # momentum 0.9: com só 15 lotes por época, o padrão (0.99) deixa as médias móveis atrasadas na validação
+        if c['batchnorm']: layers.append(tf.keras.layers.BatchNormalization(momentum=0.9))
         layers += [tf.keras.layers.Activation('relu'),tf.keras.layers.MaxPooling2D(2)]
     layers += [tf.keras.layers.Flatten(),tf.keras.layers.Dense(c['dense'],activation='relu')]
     if c['dropout']: layers.append(tf.keras.layers.Dropout(c['dropout']))
